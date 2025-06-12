@@ -3,20 +3,8 @@ import scapy.all as scapy
 import time
 import subprocess
 
-# parse_input = optparse.OptionParser()
-# parse_input.add_option("-t", "--target", dest="target_ip", help="Target device IP")
-# parse_input.add_option("-r", "--router", dest="router_ip", help="The router IP")
-# 
-# user_options = parse_input.parse_args()[0]
-# target_ip = user_options.target_ip
-# router_ip = user_options.router_ip
-# 
-# if not target_ip:
-#     print("Enter Target IP Address.")
-#     raise SystemExit
-# elif not router_ip:
-#     print("Enter Router IP Address.")
-#     raise SystemExit
+def get_user_input() -> tuple[str, str]:
+    pass
 
 def get_mac(ip: str) -> str:
     arp_request_packet = scapy.ARP(pdst=ip)
